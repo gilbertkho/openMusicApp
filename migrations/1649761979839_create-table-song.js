@@ -25,17 +25,15 @@ exports.up = pgm => {
             notNull: true,
         },
         duration:{
-            type: 'INTEGER',
-            primaryKey: true,
+            type: 'INTEGER',            
         },
         albumId:{
             type: 'TEXT',
-            notNull: true,
+            refrences: 'album'
         }
-
     })
 };
 
 exports.down = pgm => {
-    pgm.dropTable('song')
+    pgm.dropTable('song');
 };

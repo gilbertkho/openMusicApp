@@ -6,9 +6,9 @@ class AlbumHandler {
         this._validator = validator;
 
         this.postAlbumHandler = this.postAlbumHandler.bind(this);
-        this.getAlbumHandler = this.getAlbumByIdHandler.bind(this);
-        this.putAlbumHandler = this.putAlbumByIdHandler.bind(this);
-        this.deleteAlbumHandler = this.deleteAlbumByIdHandler.bind(this);
+        this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
+        this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
+        this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
     }
 
     async postAlbumHandler(request, h){
