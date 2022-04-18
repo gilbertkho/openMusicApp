@@ -14,9 +14,6 @@ const PlaylistsValidator = {
     },
     validatePlaylistSongPayload: (payload) => {
         const validationResult = PlaylistSongPayloadSchema.validate(payload);
-        if(!auth){
-            throw new AuthenticationError('Autentikasi tidak ditemukan');
-        }
         if(validationResult.error){
             throw new InvariantError(validationResult.error.message);
         }
