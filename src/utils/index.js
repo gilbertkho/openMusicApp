@@ -1,5 +1,5 @@
 const mapDBToModel = ({
-    id, title, year, genre, performer, duration, albumId   
+    id, title, performer,
 }) => ({
     id,
     title,
