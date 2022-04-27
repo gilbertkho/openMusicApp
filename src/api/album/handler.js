@@ -1,4 +1,5 @@
 const ClientError = require('../../exceptions/ClientError');
+const CacheService =  require('../../services/redis/CacheService');
 
 class AlbumHandler {
     constructor(service, validator){
@@ -9,6 +10,8 @@ class AlbumHandler {
         this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
         this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
         this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
+        this.postAlbumLikeHandler = this.postAlbumLikeHandler.bind(this);
+        this.getAlbumLikeHandler = this.getAlbumLikeHandler.bind(this);
     }
 
     async postAlbumHandler(request, h){
@@ -141,6 +144,90 @@ class AlbumHandler {
           }
     }
 
+    async postAlbumLikeHandler(request, h){
+        try {
+            const { id } = request.params;
+            await this._service.getAlbumById(id);
+            const {id: credentialId} = request.auth.credentials;
+            const result = await this._service.processAlbumLike(credentialId, id);
+            
+            const cacheService = new CacheService();
+            await cacheService.delete(`likes:${id}`);
+
+            const response = h.response({
+                status: 'success',
+                message: result ? 'Like berhasil ditambahkan ke album' : 'Like berhasil dibatalkan ke album',
+            });
+            response.code(201);
+            return response;
+          } catch (error) {
+            if (error instanceof ClientError) {
+                const response = h.response({
+                    status: 'fail',
+                    message: error.message,
+                });
+                response.code(error.statusCode);
+                return response;
+            }
+        
+            // Server ERROR!
+            const response = h.response({
+                status: 'error',
+                message: 'Maaf, terjadi kegagalan pada server kami.',
+            });
+            response.code(500);
+            console.error(error);
+            return response;
+        }
+    }
+
+    async getAlbumLikeHandler(request, h){
+        try {
+            const { id } = request.params;
+            const cacheService = new CacheService();
+            const result = await cacheService.get(`likes:${id}`);
+            if(result){
+                const response = h.response({
+                    status: 'success',
+                    data: {
+                        likes: parseInt(result)
+                    },
+                });
+                response.header('X-Data-Source','cache');
+                response.code(200);
+                return response;
+            }
+
+            const likes = await this._service.getAlbumLike(id);
+            await cacheService.set(`likes:${id}`, JSON.stringify(likes));
+
+            return {
+                status: 'success',
+                data: {
+                    likes,
+                },
+            };
+          } catch (error) {
+            if (error instanceof ClientError) {
+                const response = h.response({
+                    status: 'fail',
+                    message: error.message,
+                });
+                response.code(error.statusCode);
+                return response;
+            }
+        
+            // Server ERROR!
+            const response = h.response({
+                status: 'error',
+                message: 'Maaf, terjadi kegagalan pada server kami.',
+            });
+            response.code(500);
+            console.error(error);
+
+            return response;
+        }
+    }
 }
 
 module.exports = AlbumHandler;
